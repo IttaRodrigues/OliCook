@@ -1,8 +1,8 @@
-using GCook.Models;
+using OliCook.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace GCook.Data;
+namespace OliCook.Data;
 
 public class AppDbSeed
 {

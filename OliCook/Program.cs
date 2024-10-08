@@ -11,9 +11,7 @@ var versao = ServerVersion.AutoDetect(conexao);
 builder.Services.AddDbContext<AppDbContext>(
  Options => Options.UseMySql(conexao, versao)
 );
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(
-    
-)
+builder.Services.AddIdentity<IdentityUser, IdentityRole>();
 
 var app = builder.Build();
 
@@ -30,6 +28,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

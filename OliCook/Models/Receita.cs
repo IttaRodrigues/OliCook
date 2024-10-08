@@ -12,7 +12,7 @@ public class Receita
 
     [Required]
     [StringLength(100)]
-    public string Name { get; set; }
+    public string Nome { get; set; }
 
     [StringLength(1000)]
     public string Descricao { get; set; }
