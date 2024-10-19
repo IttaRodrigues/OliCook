@@ -1,5 +1,5 @@
 using OliCook.Models;
-//using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +27,5 @@ public class AppDbContext : IdentityDbContext
 
         builder.Entity<ReceitaIngrediente>()
         .HasKey(ri => new { ri.ReceitaId, ri.IngredienteId });
-
     }
 }
