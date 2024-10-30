@@ -3,18 +3,18 @@ using System.Net.Mail;
 
 
 namespace OliCook.Services;
-{
-    public class EmailSender : ImailSender
+
+    public class EmailSender : IEmailSender
     {
-        public async Task SendEmailAsync(string emailAddress, string suject, string htmlMessage)
-    
-        var mail = "olicook.app@outook.com";
+        public async Task SendEmailAsync(string emailAddress, string subject, string htmlMessage)
+        {
+        var mail = "olicook.app@outlook.com";
         var pw = "QV3E4khpZBEcL7K";
 
         var   client = new SmtpClient("smtp-mail.outlook.com", 587) 
       {
         EnableSsl = true,
-        Credentials = new NetworkCredential(mail,pw)
+        Credentials = new NetworkCredential(mail, pw)
       };
 
       MailMessage sendMail = new(
@@ -27,4 +27,4 @@ namespace OliCook.Services;
 
       await client.SendMailAsync(sendMail);
     }
-}
+  }

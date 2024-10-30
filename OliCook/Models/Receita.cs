@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
+
 
 namespace OliCook.Models;
 
@@ -35,7 +35,7 @@ public class Receita
     [ForeignKey("CategoriaId")]
     public Categoria Categoria { get; set; }
 
-    public ICollection<ReceitaIngrediente> Ingrediente { get; set; }
+    public ICollection<ReceitaIngrediente> Ingredientes { get; set; }
 
 
 }

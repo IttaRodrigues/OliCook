@@ -1,2 +1,5 @@
 git config --global user.name IttaRodrigues
 git config --global user.email itamararodriguesdeoliveira@gmail.com
+
+Gerar Controller e Viewa de CRUD:
+dotnet-aspnet-codegenerator controller -name CategoriasController -m Categoria -dc AppDbContext -outDir Controllers -l "~/Views/Shared/_LayoutAdmin.cshtml" 

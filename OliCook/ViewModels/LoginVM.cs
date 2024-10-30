@@ -9,13 +9,13 @@ namespace OliCook.ViewModels;
     [Required(ErrorMessage = "Por favor, informe seu email ou nome de usuario")]
     public string Email {get; set;} 
 
-    [Display(Name = "Senha de Acesso", prompt = "*********" )]
-    [Requiref(ErrorMessage = " Por favor, informe sua senha")]
+    [Display(Name = "Senha de Acesso", Prompt = "*********" )]
+    [Required(ErrorMessage = " Por favor, informe sua senha")]
     [DataType(DataType.Password)]
     public string  Senha { get; set; }   
 
     [Display(Name = "Manter Conectado?"  )]
     public bool Lembrar { get; set; } = false;
 
-    public strinf UrlRetorno { get; set; }
+    public string UrlRetorno { get; set; }
 }

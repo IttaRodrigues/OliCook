@@ -5,8 +5,8 @@ using OliCook.Data;
 using OliCook.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace OliCook.Controllers
-{
+namespace OliCook.Controllers;
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -27,7 +27,7 @@ namespace OliCook.Controllers
                     .ToList(),
                 Receitas = _context.Receitas
                     .Include(r => r.Categoria)
-                    .Include(r => r.Ingredientes)
+                    .Include(r => r.Ingredientes) //Erro retirei um s
                     .AsNoTracking()
                     .ToList()
             };
@@ -38,10 +38,10 @@ namespace OliCook.Controllers
         {
             Receita receita = _context.Receitas
                 .Include(r => r.Categoria)
-                .Include(r => r.Ingredientes)
+                .Include(r => r.Ingredientes) //retirei um s 
                 .ThenInclude(i => i.Ingrediente)
                 .AsNoTracking()
-                .FirstOrDefault(r => r.Id == id);
+                .FirstOrDefault(r => r.Id == id); //erro no Id
             return View(receita);
         }
 
@@ -56,4 +56,4 @@ namespace OliCook.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
-}
+

@@ -2,55 +2,51 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using OliCook.Data;
 using OliCook.ViewModels;
-using Microsoft.Entity.FrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OliCook.Helpers;
 using OliCook.Models;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
-using Sustem.Text.Encodings.Web;
+using System.Text.Encodings.Web;
+
 
 namespace OliCook.Services;
 
 public class UsuarioService : IUsuarioService
 {
-
-    private readonly AddDbContext _contexto;
+    private readonly AppDbContext _contexto;
     private readonly SignInManager<IdentityUser> _signInManager;
-
     private readonly UserManager<IdentityUser> _userManager;
-
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IUserStore<IdentityUser> _userStore;
     private readonly IUserEmailStore<IdentityUser> _emailStore;
-
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IEmailSender _emailSender;
     private readonly ILogger<UsuarioService> _logger;
 
-    public UsuarioService(
-       AddDbContext contexto,
-       SignInManager<IdentityUser> signInManager,
-       UserManager<IdentityUser> userManager,
-       IHttpContextAccessor httpContextAccessor,
-       IUserStore<IdentityUser> userStore,
-       IUserEmailStore<IdentityUser> emailStore,
-       IWebHostEnvironment hostEnvironment,
-       IEmailSender emailSender,
-       ILogger<UsuarioService> logger
-    )
 
+    public UsuarioService(
+        AppDbContext contexto,
+        SignInManager<IdentityUser> signInManager,
+        UserManager<IdentityUser> userManager,
+        IHttpContextAccessor httpContextAccessor,
+        IUserStore<IdentityUser> userStore,
+        IWebHostEnvironment hostEnvironment,
+        IEmailSender emailSender,
+        ILogger<UsuarioService> logger
+    )
     {
         _contexto = contexto;
         _signInManager = signInManager;
         _userManager = userManager;
         _httpContextAccessor = httpContextAccessor;
         _userStore = userStore;
-        _emailStore = emailStore;
+        _emailStore = (IUserEmailStore<IdentityUser>)_userStore;
         _hostEnvironment = hostEnvironment;
         _emailSender = emailSender;
-        _logger = logger
+        _logger = logger;
+    }
 
-         }
     public async Task<bool> ConfirmarEmail(string userId, string code)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -62,24 +58,25 @@ public class UsuarioService : IUsuarioService
         var result = await _userManager.ConfirmEmailAsync(user, code);
         return result.Succeeded;
     }
+
     public async Task<UsuarioVM> GetUsuarioLogado()
     {
-        var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimType.NameIdentifier);
+        var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
         {
             return null;
         }
         var userAccount = await _userManager.FindByIdAsync(userId);
-        var usuario = await _contexto.Usuarios.Where(uint => u.UsuarioId == userId).SingleOrdeDaultAsync();
-        var perfis -string.Join(", ", await _userManager.GetRolesAsync(userAccount));
+        var usuario = await _contexto.Usuarios.Where(u => u.UsuarioId == userId).SingleOrDefaultAsync();
+        var perfis = string.Join(", ", await _userManager.GetRolesAsync(userAccount));
         var admin = await _userManager.IsInRoleAsync(userAccount, "Administrador");
         UsuarioVM usuarioVM = new()
         {
-            Usuario = userId,
-            Nome = ususario.Nome,
+            UsuarioId = userId,
+            Nome = usuario.Nome,
             DataNascimento = usuario.DataNascimento,
             Foto = usuario.Foto,
-            _emailSender = userAccount.Email,
+            Email = userAccount.Email,
             UserName = userAccount.UserName,
             Perfil = perfis,
             IsAdmin = admin
@@ -89,89 +86,89 @@ public class UsuarioService : IUsuarioService
 
     public async Task<SignInResult> LoginUsuario(LoginVM login)
     {
-        strting UserName = login.Email;
+        string userName = login.Email;
         if (Helper.IsValidEmail(login.Email))
         {
-            var user = awair _userManager.FindByIdAsync(login.Email);
+            var user = await _userManager.FindByEmailAsync(login.Email);
             if (user != null)
-                UserName = user.UserName;
+                userName = user.UserName;
         }
 
         var result = await _signInManager.PasswordSignInAsync(
-            UserName, login.Senha, login.Lembrar, lockoutOnFailure: true
+            userName, login.Senha, login.Lembrar, lockoutOnFailure: true
         );
+
         if (result.Succeeded)
-            _logger.LogInformation($"Usuario {login.Email} acessou o sistema");
+            _logger.LogInformation($"Usuário {login.Email} acessou o sistema");
         if (result.IsLockedOut)
-            _logger.LogWarning($"Usuario {login.Email} esta bloqueado");
+            _logger.LogWarning($"Usuário {login.Email} está bloqueado");
 
         return result;
     }
 
     public async Task LogoffUsuario()
     {
-        _logger.LogInformation($"Usuario {ClaimTypes.Email} fez logoff");
+        _logger.LogInformation($"Usuário {ClaimTypes.Email} fez logoff");
         await _signInManager.SignOutAsync();
     }
 
     public async Task<List<string>> RegistrarUsuario(RegistroVM registro)
+    {
+        var user = Activator.CreateInstance<IdentityUser>();
 
-     var user = Activator.CreateInstance<IdentityUser>();
+        await _userStore.SetUserNameAsync(user, registro.Email, CancellationToken.None);
+        await _emailStore.SetEmailAsync(user, registro.Email, CancellationToken.None);
+        var result = await _userManager.CreateAsync(user, registro.Senha);
 
-    await _userStore.SetUserNameAsync(user, registro.Email, CancellationToken.None);
-    await _emailStore.SetEmailAsync(user, registro.Email, CancellationToken.None);
-    var result = await _userManager.CreateAsync(user, registro.Senha);
-
-     if (result.Succeeded)
-     {
-
-      _logger.LogInformation($"Novo usuario registrado com o email {user.Email}.");
-
-    var userId = await _userManager.GetUserIdAsync(user);
-    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-    code = WebEncoders.Base64UrlDecode(Encoding.UTF8.GetBytes(code));
-      var url = $"html://localhost:5143/Account/ConfirmarEmail?userId={userId}&code={code}";
-
-    await _userManager.AddToRoleAsync(user, "Usuario");
-    await _emailSender.SendEmailAsync(registro.Email, "OliCook - Criação de Conta", GetConfirmEmailHtml (HtmlEncoder.Default.Encode(url))); 
-
-      Usuario usuario = new()
-      {
-          UsuarioId = userId,
-          DataNascimento = registro.DataNascimento ?? DateTime.Now,
-          Nome = registro.Nome
-      };
-      if (registro.Foto != null)
-      {
-
-        string filenName = userId + Path.GeExtension(registro.Foto.FileName);
-    string uploads = Path.Combine(_hostEnvironment.WebRootPath, @"img\usuarios");
-    string newFile = Path.Combine(aploads, fileName);
-        using (var stream = new FileStream(newFile, FileMode.Create))
+        if (result.Succeeded)
         {
-            registro.Foto.CopyTo(stream);
+            _logger.LogInformation($"Novo usuário registrado com o email {user.Email}.");
+
+            var userId = await _userManager.GetUserIdAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var url = $"http://localhost:5143/Account/ConfirmarEmail?userId={userId}&code={code}";
+
+            await _userManager.AddToRoleAsync(user, "Usuário");
+
+            await _emailSender.SendEmailAsync(registro.Email, "OliCook - Criação de Conta", GetConfirmEmailHtml(HtmlEncoder.Default.Encode(url)));
+
+            // Cria a conta pessoal do usuário
+            Usuario usuario = new()
+            {
+                UsuarioId = userId,
+                DataNascimento = registro.DataNascimento ?? DateTime.Now,
+                Nome = registro.Nome
+            };
+            if (registro.Foto != null)
+            {
+                string fileName = userId + Path.GetExtension(registro.Foto.FileName);
+                string uploads = Path.Combine(_hostEnvironment.WebRootPath, @"img\usuarios");
+                string newFile = Path.Combine(uploads, fileName);
+                using (var stream = new FileStream(newFile, FileMode.Create))
+                {
+                    registro.Foto.CopyTo(stream);
+                }
+                usuario.Foto = @"\img\usuarios\" + fileName;
+            }
+            _contexto.Add(usuario);
+            await _contexto.SaveChangesAsync();
+
+            return null;
         }
-        usuario.Foto = @"img\usuarios\" + fileName;
-                    
+
+        List<string> errors = new();
+        foreach (var error in result.Errors)
+        {
+            errors.Add(TranslateIdentityErrors.TranslateErrorMessage(error.Code));
         }
-        _contexto.Add(usuario);
-await _contexto.SaveChangesAsync();
+        return errors;
+    }
 
-return null;
-      }
-
-      List<string> errors = new();
-foreach (var error in result.Errors)
-{
-    errors.Add(TranslateIdentityErrors.TranslateErrorMessage(error.Code));
-}
-return errors;
-
-}  
 
     private string GetConfirmEmailHtml(string url)
-{
-    var email = @"
+    {
+        var email = @"
         <!DOCTYPE html>
         <html>
         <head>
@@ -289,7 +286,7 @@ return errors;
                 <tr>
                     <td align=""center"" valign=""top"" style=""padding: 36px 24px;"">
                     <a href=""localhost:5143"" target=""_blank"" style=""display: inline-block;"">
-                        <img src=""https://github.com/3-MTecPi/GCookA/blob/b2cff88fe35a5c5283b04639ca5caa43ee91a6bb/GCook/wwwroot/img/logo.png?raw=true"" alt=""Logo"" border=""0"" width=""100"" style=""display: block; width: 100px; max-width: 400px; min-width: 100px;"">
+                        <img src=""https://github.com/3-MTecPi/OliCookA/blob/b2cff88fe35a5c5283b04639ca5caa43ee91a6bb/OliCook/wwwroot/img/logo.png?raw=true"" alt=""Logo"" border=""0"" width=""100"" style=""display: block; width: 100px; max-width: 400px; min-width: 100px;"">
                     </a>
                     </td>
                 </tr>
@@ -340,7 +337,7 @@ return errors;
                 <!-- start copy -->
                 <tr>
                     <td align=""left"" bgcolor=""#ffffff"" style=""padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;"">
-                    <p style=""margin: 0;"">Clique no botão abaixo para confirmar a criação de sua conta. Se você não solicitou acesso ao site de receitas GCook, apenas exclua esse email.
+                    <p style=""margin: 0;"">Clique no botão abaixo para confirmar a criação de sua conta. Se você não solicitou acesso ao site de receitas OliCook, apenas exclua esse email.
                         .</p>
                     </td>
                 </tr>
@@ -370,7 +367,7 @@ return errors;
                 <tr>
                     <td align=""left"" bgcolor=""#ffffff"" style=""padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;"">
                     <p style=""margin: 0;"">Se isto não funcionar, clique no link a seguir em um navegador:</p>
-                    <p style=""margin: 0;""><a href=""" + url + @""" target=""_blank"">https://gcook.com.br/confirmarEmail</a></p>
+                    <p style=""margin: 0;""><a href=""" + url + @""" target=""_blank"">https://olicook.com.br/confirmarEmail</a></p>
                     </td>
                 </tr>
                 <!-- end copy -->
@@ -378,7 +375,7 @@ return errors;
                 <!-- start copy -->
                 <tr>
                     <td align=""left"" bgcolor=""#ffffff"" style=""padding: 20px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px; border-bottom: 3px solid #d4dadf"">
-                    <p style=""margin: 0;"">Atenciosamente,<br> Equipe GCook</p>
+                    <p style=""margin: 0;"">Atenciosamente,<br> Equipe OliCook</p>
                     </td>
                 </tr>
                 <!-- end copy -->
@@ -406,7 +403,7 @@ return errors;
                 <!-- start permission -->
                 <tr>
                     <td align=""center"" bgcolor=""#e9ecef"" style=""padding: 12px 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; color: #666;"">
-                    <p style=""margin: 0;"">Você recebeu este email por solicitar acesso ao site GCook. Se você não solicitou acesso, apenas apague este email.</p>
+                    <p style=""margin: 0;"">Você recebeu este email por solicitar acesso ao site OliCook. Se você não solicitou acesso, apenas apague este email.</p>
                     </td>
                 </tr>
                 <!-- end permission -->
@@ -427,7 +424,9 @@ return errors;
         </body>
         </html>
         ";
-    return email;
+        return email;
+    }
+
+
+
 }
-
-

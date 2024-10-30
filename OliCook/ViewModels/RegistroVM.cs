@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotation;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace OliCook.ViewModels;
@@ -23,20 +23,18 @@ namespace OliCook.ViewModels;
         [DataType(DataType.Password)]
         [Display(Name = "Senha de Acesso", Prompt = "Informe uma Senha para Acesso")]
         [Required(ErrorMessage = "Por favor, informe sua Senha de Acesso")]
-        [StringLength(20, MinimumLength = 6, ErrosMessage = "A senha deve possuir no minimo 6 e no maximo 20 caracteres")]
+        [StringLength(20, MinimumLength = 6, ErrorMessage = "A senha deve possuir no minimo 6 e no maximo 20 caracteres")]
         public string Senha { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar Senha de Acesso", Prompt = "Confirme sua Senha para Acesso")]
         [Compare("Senha", ErrorMessage = "As Senhas não Conferem.")]
         
-        public tring ConfirmacaoSenha { get; set; }
+        public string ConfirmacaoSenha { get; set; }
         public IFormFile Foto { get; set; }  
 
         public bool Termos { get; set; } = false;
 
         public bool Enviado { get; set; } = false;
-
-
 
     }
