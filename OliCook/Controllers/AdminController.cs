@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GCook.Controllers
+namespace OliCook.Controllers
 {
     [Authorize(Roles = "Administrador")]
     public class AdminController : Controller

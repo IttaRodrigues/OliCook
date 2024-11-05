@@ -15,10 +15,11 @@ namespace OliCook.Controllers
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _webHost;
 
-        public CategoriasController(AppDbContext context, IWebHostEnvironment WebHost)
+        public CategoriasController(AppDbContext context, IWebHostEnvironment webHost)
         {
             _context = context;
-            _webHost = WebHost;
+            _webHost = webHost;
+            
         }
 
         // GET: Categorias
@@ -71,8 +72,8 @@ namespace OliCook.Controllers
                     {
                         foto.CopyTo(stream);
                     }
-                    categoria.Foto = "\\img\\categorias\\" + nomeArquivo;
-                    await _context.SaveChangesAsync();
+                categoria.Foto = "\\img\\categorias\\" + nomeArquivo;
+                await _context.SaveChangesAsync();
                 }
                 return RedirectToAction(nameof(Index));
             }

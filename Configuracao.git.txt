@@ -1,5 +1,16 @@
 git config --global user.name IttaRodrigues
 git config --global user.email itamararodriguesdeoliveira@gmail.com
 
-Gerar Controller e Viewa de CRUD:
-dotnet-aspnet-codegenerator controller -name CategoriasController -m Categoria -dc AppDbContext -outDir Controllers -l "~/Views/Shared/_LayoutAdmin.cshtml" 
+dotnet new mvc -o Pokedex
+
+Instalar pacote do Entityframeworkcore e  SQL Server
+
+Shift + Alt + F = Auto alinhar o código
+
+dotnet ef migrations add criarBanco
+dotnet ef database update
+
+Gerar Controller e Views de CRUD:
+
+dotnet-aspnet-codegenerator controller -name CategoriasController -m Categoria -dc AppDbContext -outDir Controllers -l "~/Views/Shared/_LayoutAdmin.cshtml"
+
