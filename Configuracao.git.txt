@@ -1,7 +1,7 @@
 git config --global user.name IttaRodrigues
 git config --global user.email itamararodriguesdeoliveira@gmail.com
 
-dotnet new mvc -o Pokedex
+dotnet new mvc -o OliCook
 
 Instalar pacote do Entityframeworkcore e  SQL Server
 
@@ -14,3 +14,4 @@ Gerar Controller e Views de CRUD:
 
 dotnet-aspnet-codegenerator controller -name CategoriasController -m Categoria -dc AppDbContext -outDir Controllers -l "~/Views/Shared/_LayoutAdmin.cshtml"
 
+https://github.com/2DS2024/GCook/tree/main/GCook
